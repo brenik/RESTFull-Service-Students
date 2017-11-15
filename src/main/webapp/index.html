@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student task Spring</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <script type="text/javascript" src="scripts/jquery-3.2.1.js"></script>
+</head>
+<body>
+<!--Main menu-->
+<div class="container">
+    <div fragment="header">
+        <div class="jumbotron">
+            <div class="row text-center">
+                <div class="">
+                    <h3>Students Web App</h3>
+                </div>
+            </div>
+        </div>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href='#' onclick= load_all_students()>Students</a>
+                    <a class="navbar-brand" href='#' onclick= show_add_student()>Create Student</a>
+                </div>
+            </div>
+        </nav>
+
+    </div>
+</div>
+<!--end Main menu-->
+
+<!--Add new student-->
+<div id="StForm"  class="container text-center";  >
+    <h1> <span id="LabStForm" class = "label label-info">  </span></h1>
+    <input type="hidden" id="studentid" name="student_id"/>
+    <label class="control-label col-md-3">Name</label>
+    <div class="col-md-7">
+        <input type="text" id="new_name" class="form-control" name="name" value="Students Name"/>
+    </div>
+    <label class="control-label col-md-3">Surname</label>
+    <div class="col-md-7">
+        <input type="text" id="new_surname" class="form-control" name="surname" value="Students Surname"/>
+    </div>
+    <div class="form-group">
+        <input type="submit" id="btnSaveAdd" class="btn btn-primary" value="Save" onclick="add_student()" />
+        <input type="submit" id="btnSaveEdit" class="btn btn-primary" value="Save Edit" onclick="edit_student()" />
+    </div>
+</div>
+<!--end Add new student-->
+
+<!--Create header table students-->
+<div class="container">
+    <h2>Students List</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>  Id  </th>
+            <th>     Name </th>
+            <th>   Surname  </th>
+            <th>  View  </th>
+            <th>  Edit  </th>
+            <th> Delete </th>
+        </tr>
+        </thead>
+    </table>
+    <!--end Create header table students-->
+    <script type="text/javascript">
+        load_all_students = function(){
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/students/all',
+                    type: 'GET',
+                    success: function (students) {
+                        $(StForm).hide();
+                        $('.tr').remove();
+                        $.each(students, function (id, students) {
+                            $("table").append("<tbody id='tbodyid'><tr class='tr'><th>" + students.id + "</a></th><td>" + students.name + "</a></td><td>" + students.surname + "</a></td><td><a href='#' onclick= view_student(" + students.id + ");> <span class=\"glyphicon glyphicon-eye-open\"> </a></td><td><a href='#' onclick= show_edit_student(" + students.id + ");> <span class=\"glyphicon glyphicon-pencil\"> </a> </td><td><a href='#' onclick='delete_student(" + students.id + ");'> <span class=\"glyphicon glyphicon-trash\"> </a></td></tr></tbody>")
+                        });
+                    }
+                });
+            });
+        }
+        $(StForm).hide();
+
+
+        delete_student = function(id){
+            $('.tr').remove();
+            $.ajax({
+                url:'/students/delete/'+id,
+                type:'DELETE',
+                success: function(){
+                    load_all_students();
+                }
+            });
+        }
+
+        view_student = function(id){
+            $('.tr').remove();
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/students/'+id,
+                    type: 'GET',
+                    success: function (student) {
+                        $('.tr').remove();
+                        $("table").append("<tbody id='tbodyid'><tr class='tr'><th>" + student.id + "</a></th><td>" + student.name + "</a></td><td>" + student.surname + "</a></td><td><a href='#' onclick= view_student(" + student.id + ");> <span class=\"glyphicon glyphicon-eye-open\"> </a></td><td><a href='#' onclick= show_edit_student(" + student.id + ");> <span class=\"glyphicon glyphicon-pencil\"> </a> </td><td><a href='#' onclick='delete_student(" + student.id + ");'> <span class=\"glyphicon glyphicon-trash\"> </a></td></tr></tbody>")
+                    }
+                });
+            });
+        }
+
+        show_add_student = function(){
+            $("#LabStForm").text("Add New Student");
+            $(StForm).show();
+            $(btnSaveEdit).hide();
+            $(btnSaveAdd).show();
+        }
+
+        add_student = function(){
+            $.ajax({
+                url:'/students/add',
+                type:'POST',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                data:JSON.stringify({name:$('#new_name').val(),surname:$('#new_surname').val()}),
+                success: function(){
+                    $(StForm).hide();
+                    load_all_students.call();
+                }
+            });
+        }
+
+
+        show_edit_student = function(id){
+            $("#LabStForm").text("Edit Student");
+            $(StForm).show();
+            $(btnSaveAdd).hide();
+            $(btnSaveEdit).show();
+            $('.tr').remove();
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/students/'+id,
+                    type: 'GET',
+                    success: function (student) {
+                        $('.tr').remove();
+                        $("table").append("<tbody id='tbodyid'><tr class='tr'><th>" + student.id + "</a></th><td>" + student.name + "</a></td><td>" + student.surname + "</a></td><td><a href='#' onclick= view_student(" + student.id + ");> <span class=\"glyphicon glyphicon-eye-open\"> </a></td><td><a href='#' onclick= show_edit_student(" + student.id + ");> <span class=\"glyphicon glyphicon-pencil\"> </a> </td><td><a href='#' onclick='delete_student(" + student.id + ");'> <span class=\"glyphicon glyphicon-trash\"> </a></td></tr></tbody>")
+                        $("#new_name").val(student.name);
+                        $("#new_surname").val(student.surname);
+                        $("#studentid").val(student.id);
+                    }
+                });
+            });
+        }
+
+        edit_student = function(){
+            $.ajax({
+                url:'/students/edit/'+$('#studentid').val(),
+                type:'PUT',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                data:JSON.stringify({id:$('#studentid').val(),name:$('#new_name').val(),surname:$('#new_surname').val()}),
+                success: function(){
+                    $(StForm).hide();
+                    load_all_students.call();
+                }
+            });
+        }
+
+    </script>
+</div>
+</body>
+</html>
